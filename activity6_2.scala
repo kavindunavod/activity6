@@ -1,71 +1,101 @@
-object Activity6_2 {
-  def main(args: Array[String]): Unit = {
-    import scala.io.StdIn._
+object activity6_2 {
 
-    // Function to read and validate the student's name
-    def readStudentName(): String = {
-      print("Enter student's name: ")
-      val name = readLine().trim
-      if (name.isEmpty) {
-        println("Name cannot be empty. Please enter a valid name.")
-        readStudentName() // Recursive call to prompt for a valid name
-      } else {
-        name
-      }
+  // Function to validate input
+  def validateInput(name: String, marks: Int, totalMarks: Int): (Boolean, Option[String]) = {
+    if (name.isEmpty) {
+      (false, Some("Name cannot be empty."))
+    } else if (marks < 0) {
+      (false, Some("Marks cannot be negative."))
+    } else if (totalMarks <= 0) {
+      (false, Some("Total possible marks must be a positive number."))
+    } else if (marks > totalMarks) {
+      (false, Some("Marks cannot exceed total possible marks."))
+    } else {
+      (true, None)
+    }
+  }
+
+  // Function to read student info
+  def getStudentInfo(): (String, Int, Int, Double, Char) = {
+    println("Enter student's name:")
+    val name = scala.io.StdIn.readLine()
+
+    println("Enter student's marks:")
+    val marks = scala.io.StdIn.readInt()
+
+    println("Enter total possible marks:")
+    val totalMarks = scala.io.StdIn.readInt()
+
+    val (isValid, errorMessage) = validateInput(name, marks, totalMarks)
+
+    if (!isValid) {
+      println(errorMessage.getOrElse("Invalid input."))
+      return getStudentInfo()  // Retry if input is invalid
     }
 
-    // Function to read and validate an integer input
-    def readPositiveInt(prompt: String): Int = {
-      print(prompt)
-      try {
-        val value = readInt()
-        if (value > 0) value
-        else {
-          println("Input must be a positive integer. Please try again.")
-          readPositiveInt(prompt) // Recursive call for valid input
-        }
-      } catch {
-        case _: Exception =>
-          println("Invalid input. Please enter a positive integer.")
-          readPositiveInt(prompt) // Recursive call for valid input
-      }
+    val percentage = (marks.toDouble / totalMarks) * 100
+    val grade = percentage match {
+      case p if p >= 90 => 'A'
+      case p if p >= 75 => 'B'
+      case p if p >= 50 => 'C'
+      case _ => 'D'
     }
 
-    // Function to calculate the percentage and grade
-    def calculateGrade(marks: Int, totalMarks: Int): (Double, String) = {
-      val percentage = (marks.toDouble / totalMarks) * 100
-      val grade = percentage match {
-        case p if p >= 90 => "A"
-        case p if p >= 75 => "B"
-        case p if p >= 50 => "C"
-        case _            => "D"
-      }
-      (percentage, grade)
-    }
+    (name, marks, totalMarks, percentage, grade)
+  }
 
-    // Main program logic
-    val name = readStudentName()
-    val totalMarks = readPositiveInt("Enter total possible marks: ")
+  // Function to print student record
+  def printStudentRecord(studentRecord: (String, Int, Int, Double, Char)): Unit = {
+    val (name, marks, totalMarks, percentage, grade) = studentRecord
 
-    val marks = {
-      var m = 0
-      var count =1;
-      while(m > totalMarks || count ==1) {
-        m = readPositiveInt("Enter marks obtained: ")
-        count=count+1
-        if (m > totalMarks) {
-          println(s"Marks cannot exceed total possible marks ($totalMarks). Please try again.")
-        }
-      }
-      m
-    }
-
-    val (percentage, grade) = calculateGrade(marks, totalMarks)
-
-    // Display the results
-    println(s"\nStudent Name: $name")
-    println(f"Marks Obtained: $marks/$totalMarks")
+    println(s"Student Name: $name")
+    println(s"Marks: $marks")
+    println(s"Total Possible Marks: $totalMarks")
     println(f"Percentage: $percentage%.2f%%")
     println(s"Grade: $grade")
+    println("-----------")
+  }
+
+  // Function to get student info with retry
+  def getStudentInfoWithRetry(): (String, Int, Int, Double, Char) = {
+    var isValid = false
+    var studentRecord: (String, Int, Int, Double, Char) = ("", 0, 0, 0.0, 'D')
+
+    while (!isValid) {
+      studentRecord = getStudentInfo()
+      val (name, marks, totalMarks, percentage, grade) = studentRecord
+      val validation = validateInput(name, marks, totalMarks)
+
+      if (validation._1) {
+        isValid = true
+      } else {
+        println(validation._2.getOrElse("Invalid input. Please try again."))
+      }
+    }
+    studentRecord
+  }
+
+  // Function to get number of students and their records
+  def getAllStudentRecords(numStudents: Int): List[(String, Int, Int, Double, Char)] = {
+    var studentRecords: List[(String, Int, Int, Double, Char)] = List()
+
+    for (_ <- 1 to numStudents) {
+      println(s"Enter details for student ${studentRecords.size + 1}:")
+      val studentRecord = getStudentInfoWithRetry()
+      studentRecords = studentRecords :+ studentRecord
+    }
+
+    studentRecords
+  }
+
+  def main(args: Array[String]): Unit = {
+    println("Enter the number of students:")
+    val numStudents = scala.io.StdIn.readInt()
+
+    val studentRecords = getAllStudentRecords(numStudents)
+    println("\nStudent Records:")
+    println("---------------")
+
+    studentRecords.foreach(printStudentRecord)
   }
 }
