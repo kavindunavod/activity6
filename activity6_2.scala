@@ -1,68 +1,114 @@
-object Activity6_2 {
+import scala.io.StdIn
 
-  // Function to validate input
-  def validateInput(name: String, marks: Int, totalMarks: Int): (Boolean, Option[String]) = {
-    if (name.isEmpty) (false, Some("Name cannot be empty."))
-    else if (marks < 0) (false, Some("Marks cannot be negative."))
-    else if (totalMarks <= 0) (false, Some("Total possible marks must be a positive number."))
-    else if (marks > totalMarks) (false, Some("Marks cannot exceed total possible marks."))
-    else (true, None)
-  }
+object activity6_2 {
 
-  // Function to read student info
-  def getStudentInfo(): (String, Int, Int, Double, Char) = {
-    println("Enter student's name:")
-    val name = scala.io.StdIn.readLine()
+  def getstudentdatawithretry(): (String, Int, Int, Float, Char) = {
+    println("Enter the name of the student:")
+    val name = StdIn.readLine()
 
-    println("Enter student's marks:")
-    val marks = scala.io.StdIn.readInt()
+    println("Enter the possible marks:")
+    val possiblemark = StdIn.readLine().toInt
 
-    println("Enter total possible marks:")
-    val totalMarks = scala.io.StdIn.readInt()
-
-    validateInput(name, marks, totalMarks) match {
-      case (true, _) =>
-        val percentage = (marks.toDouble / totalMarks) * 100
-        val grade = percentage match {
-          case p if p >= 90 => 'A'
-          case p if p >= 75 => 'B'
-          case p if p >= 50 => 'C'
-          case _ => 'D'
+    println("Enter your marks:")
+    val mark = StdIn.readLine().toInt
+    if (validate(name, possiblemark, mark)) {
+      if (possiblemark >= mark) {
+        val percentage = (mark.toFloat / possiblemark.toFloat) * 100
+        val grade = {
+          if (percentage >= 90) 'A'
+          else if (percentage >= 75) 'B'
+          else if (percentage >= 50) 'C'
+          else 'D'
         }
-        (name, marks, totalMarks, percentage, grade)
-      case (_, Some(errorMessage)) =>
-        println(errorMessage)
-        getStudentInfo() // Retry if input is invalid
+        (name, possiblemark, mark, percentage, grade)
+      } else {
+        println("Invalid details provided.")
+        getstudentinfo()
+      }
+    } else {
+      println("Invalid input. Please enter valid details.")
+      getstudentinfo()
+
+
+
     }
   }
 
-  // Function to print student record
-  def printStudentRecord(record: (String, Int, Int, Double, Char)): Unit = {
-    val (name, marks, totalMarks, percentage, grade) = record
-    println(s"Student Name: $name")
-    println(s"Marks: $marks")
-    println(s"Total Possible Marks: $totalMarks")
-    println(f"Percentage: $percentage%.2f%%")
-    println(s"Grade: $grade")
-    println("-----------")
+  // Function to gather student information and return a tuple
+  def getstudentinfo(): (String, Int, Int, Float, Char) = {
+    println("Enter the name of the student:")
+    val name = StdIn.readLine()
+
+    println("Enter the possible marks:")
+    val possiblemark = StdIn.readLine().toInt
+
+    println("Enter your marks:")
+    val mark = StdIn.readLine().toInt
+
+    // Validate input
+    if (validate(name, possiblemark, mark)) {
+      if (possiblemark >= mark) {
+        val percentage = (mark.toFloat / possiblemark.toFloat) * 100
+        val grade = {
+          if (percentage >= 90) 'A'
+          else if (percentage >= 75) 'B'
+          else if (percentage >= 50) 'C'
+          else 'D'
+        }
+        (name, possiblemark, mark, percentage, grade)
+      } else {
+        println("Invalid details provided.")
+        getstudentdatawithretry()
+      }
+    } else {
+      println("Invalid input. Please enter valid details.")
+      getstudentdatawithretry()
+
+
+    }
   }
 
-  // Function to get number of students and their records
-  def getAllStudentRecords(numStudents: Int): List[(String, Int, Int, Double, Char)] = {
-    (1 to numStudents).toList.map { i =>
-      println(s"Enter details for student $i:")
-      getStudentInfo()
+  // Function to print student records from a list of tuples
+  def printstudentrecord(students: List[(String, Int, Int, Float, Char)]): Unit = {
+    students.foreach { case (name, possiblemark, mark, percentage, grade) =>
+      println(s"Student Name: $name")
+      println(s"Possible Marks: $possiblemark")
+      println(s"Marks Obtained: $mark")
+      println(f"Percentage: $percentage%.2f")
+      println(s"Grade: $grade")
+      println()
+    }
+  }
+
+  // Function to validate input data
+  def validate(name: String, possiblemark: Int, mark: Int): Boolean = {
+    if (name.isEmpty) {
+      println("Name cannot be empty.")
+      false
+    } else if (possiblemark <= 0) {
+      println("Possible marks must be greater than zero.")
+      false
+    } else if (mark < 0) {
+      println("Marks cannot be negative.")
+      false
+    } else {
+      true
     }
   }
 
   def main(args: Array[String]): Unit = {
     println("Enter the number of students:")
-    val numStudents = scala.io.StdIn.readInt()
+    val numberofstudent = StdIn.readLine().toInt
 
-    val studentRecords = getAllStudentRecords(numStudents)
-    println("\nStudent Records:")
-    println("---------------")
+    // List to store student records
+    var studentrecord = List[(String, Int, Int, Float, Char)]()
 
-    studentRecords.foreach(printStudentRecord)
+    for (_ <- 0 until numberofstudent) {
+      val studentinfo = getstudentinfo()
+      studentrecord = studentrecord :+ studentinfo
+    }
+
+    // Print all student records
+    printstudentrecord(studentrecord)
   }
 }
