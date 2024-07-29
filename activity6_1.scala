@@ -30,9 +30,7 @@ object activity6_1 {
     var total=inventory1.keys.size
     println("total products in inventory1 : " + total)
 
-    // Calculate the total value of all products in inventory1
-    val totalValue: Double = inventory1.values.map { case (_, quantity, price) => quantity * price }.sum
-    println(s"\nTotal Value of Products in Inventory 1: $totalValue")
+
 
     // Check if inventory1 is empty
     if (inventory1.isEmpty) {
